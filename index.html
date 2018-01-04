@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html ng-app="App">
+<head>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.7/angular.min.js"></script>
+    <script src="js/angular-local-storage.js"></script>
+    <script src="js/app.js"></script>
+    <script>
+        function tree_toggle(event) {
+            event = event || window.event;
+            var clickedElem = event.target || event.srcElement;
+            if (!hasClass(clickedElem, 'Expand')) {
+                return;
+            }
+            var node = clickedElem.parentNode;
+            if (hasClass(node, 'ExpandLeaf')) {
+                return;
+            }
+            var newClass = hasClass(node, 'ExpandOpen') ? 'ExpandClosed' : 'ExpandOpen';
+            var re = /(^|\s)(ExpandOpen|ExpandClosed)(\s|$)/;
+            node.className = node.className.replace(re, '$1' + newClass + '$3');
+        }
+        function hasClass(elem, className) {
+            return new RegExp("(^|\\s)" + className + "(\\s|$)").test(elem.className)
+        }
+    </script>
+    <link rel="stylesheet" href="css/styles.css" />
+    <link rel="icon" href="css/img/icon.gif" />
+    <title>Simple FileExplorer</title>
+</head>
+<body ng-controller="appCtrl as fileMng">
+    <div class="modal-header cust-header">
+        <p> This is my file manager</p>        
+    </div>  
+    <table class="table cust-table">
+        <tr>
+            <th colspan="2">
+                <button class="btn btn-default" ng-disabled="fileMng.disable" ng-click="fileMng.GoBack(fileMng.currentFolder)">Back</button>
+                <button class="btn btn-default" ng-click="fileMng.AddNewFolder()">Add folder</button>
+                <button class="btn btn-default" ng-click="fileMng.AddNewFile()">Add file</button>
+                <a ng-click="fileMng.ChangeState()" style ="float:right">Help</a>                
+            </th>
+        </tr>
+        <tr>
+            <th style="width:30%!important; background:#8d9a9c!important; " rowspan="8">
+                <div onclick="tree_toggle(arguments[0])" style="height:400px!important; overflow:auto!important">
+                    <script type="text/ng-template" id="categoryTree">
+                        <div class="Expand"></div>
+                        <div class="Content">
+                            {{ folder.name + folder.extension}}
+                        </div>
+                        <ul ng-if="folder.folders" class="Container">
+                            <li class="Node ExpandOpen" ng-repeat="folder in folder.folders" ng-include="'categoryTree'">
+                            </li>
+                            <li class="Node ExpandLeaf IsLast" ng-repeat="folder in folder.files" ng-include="'categoryTree'">
+                            </li>
+                        </ul>
+                    </script>
+                    <ul class="Container">
+                        <li class="Node IsRoot ExpandOpen" ng-repeat="folder in [fileMng.rootFolder]" ng-include="'categoryTree'"></li>
+                    </ul>
+                </div>
+            </th>
+            <th style="width:70%!important;height:25px!important; background:#d8d9d9!important;">
+                <div class="roadCont">
+                    <div style="display: inline-block;" ng-repeat="road in fileMng.navigationStack track by $index">
+                        <a ng-click="fileMng.NavigatByName($index, fileMng.currentFolder)">{{road.name}} </a> /
+                    </div>
+                </div>
+            </th>
+        </tr>
+        <tr>
+            <th rowspan="4" colspan="2">
+                <div style="height:400px!important; overflow:auto;">
+                    <div ng-repeat="folders in fileMng.currentFolder.folders track by $index">
+                        <p ng-dblclick="fileMng.RenameFolder(folders)">
+                            <img src="css/img/closed_1.gif" ng-click="fileMng.NavigatTo(folders)" />
+                            {{folders.name}}
+                            <a ng-click="fileMng.DeleteFolder($index)" style="float:right!important">delete</a>
+                        </p>
+                    </div>
+                    <div ng-repeat="files in fileMng.currentFolder.files track by $index">
+                        <p ng-dblclick="fileMng.RenameFile(files)">
+                            <img src="css/img/document.gif" />
+                            {{files.name+files.extension}}
+                            <a ng-click="fileMng.DeleteFile($index)" style="float:right!important">delete</a>
+                        </p>
+                    </div>
+                </div>
+            </th>
+        </tr>
+    </table>    
+    <div ng-hide="fileMng.showHide" style="background:#405768; color: rgba(255,255,255,0.6); font-size:16px; width:50%;margin:0 auto;">
+        <p style="padding:15px;">
+            If you want to open a folder, then click on its icon. <img src="css/img/closed_1.gif" /><br />
+            To rename a folder/file, double-click on the name. <img src="css/img/folder.gif" /> or <img src="css/img/file.gif" /><br />
+        </p>
+    </div>
+    <div class="modal-footer navbar-inverse cust-footer" style="background:#405768; text-align:center">
+        <p style="color:rgba(255,255,255,0.7); font-size:24px;">&copy; All rights reserved. 2017</p>
+    </div>
+</body>
+</html>
